@@ -1,0 +1,54 @@
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.svm import SVC
+
+def plot_svm_boundary_with_title(model, X, y, title):
+    # Function to plot SVM decision boundary and data points with a title
+    # Custom plot function to allow setting the title separately
+
+    # Extract support vectors
+    sv = model.support_vectors_
+
+    # Plot data points and decision boundary
+    sns.scatterplot(x=X[:, 0], y=X[:, 1], hue=y, palette='seismic')
+    plt.scatter(sv[:, 0], sv[:, 1], marker='o', color='k', s=100, label='Support Vectors')
+    xlim = plt.gca().get_xlim()
+    ylim = plt.gca().get_ylim()
+
+    # Create grid to evaluate model
+    xx = np.linspace(xlim[0], xlim[1], 30)
+    yy = np.linspace(ylim[0], ylim[1], 30)
+    YY, XX = np.meshgrid(yy, xx)
+    xy = np.vstack([XX.ravel(), YY.ravel()]).T
+    Z = model.decision_function(xy).reshape(XX.shape)
+
+    # Plot decision boundary and margins
+    plt.contour(XX, YY, Z, colors='k', levels=[-1, 0, 1], alpha=0.5, linestyles=['--', '-', '--'])
+
+    # Set plot title
+    plt.title(title)
+    plt.legend()
+    plt.show()
+
+def visualize_svm(kernel='linear', C=1.0, gamma='auto', degree=3):
+    df = pd.read_csv("mouse_viral_study - mouse_viral_study-Copy1.csv")
+
+    y = df['Virus Present']
+    X = df.drop('Virus Present', axis=1)
+
+    model = SVC(kernel=kernel, C=C, gamma=gamma, degree=degree)
+    model.fit(X, y)
+
+    title = f"SVM with Kernel: {kernel}, C: {C}, gamma: {gamma}, degree: {degree}"
+    plot_svm_boundary_with_title(model, X.values, y.values, title)
+
+# Examples of using the function with different parameters
+visualize_svm(kernel='linear', C=0.005)
+visualize_svm(kernel='linear', C=1)
+visualize_svm(kernel='rbf', C=1)
+visualize_svm(kernel='sigmoid')
+visualize_svm(kernel='poly', C=1, degree=2)
+visualize_svm(kernel='poly', C=1, degree=3)
+visualize_svm(kernel='rbf', C=1, gamma='auto')
